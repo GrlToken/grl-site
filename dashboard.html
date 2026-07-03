@@ -1,448 +1,228 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRL Network</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-body{
-  margin:0;
-  font-family: Consolas, monospace;
-  background:#fff;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
+    body {
+      background: #fff;
+      font-family: Consolas, monospace;
+      color: #003366;
+      min-height: 100vh;
+    }
 
-#topbar{
-  width:100%;
-  box-sizing:border-box;
-  padding:15px 12px 0;
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,51,102,0.12);
+    }
 
-#topbar button{
-  background:none;
-  border:1px solid #003366;
-  color:#003366;
-  padding:6px 12px;
-  font-size:12px;
-  cursor:pointer;
-  transition:0.2s;
-}
+    .email { font-size: 12px; opacity: .5; }
 
-#topbar button:hover{
-  background:#003366;
-  color:#fff;
-}
+    button {
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      color: #003366;
+      background: transparent;
+      border: 1px solid rgba(0,51,102,0.25);
+      border-radius: 8px;
+      padding: 5px 12px;
+      cursor: pointer;
+    }
 
-#matriz{
-  margin-top:25px;
-}
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 49px);
+    }
 
-svg{
-  width:260px;
-  max-width:90vw;
-}
+    .col {
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
 
-line{
-  stroke:gold;
-  stroke-width:1.5;
-  opacity:0.85;
-}
+    .col:first-child { border-right: 1px solid rgba(0,51,102,0.10); }
 
-circle{
-  fill:#003366;
-  opacity:0.15;
-  transition:0.3s;
-}
+    .rotulo {
+      font-size: 10px;
+      letter-spacing: 3px;
+      opacity: .3;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      align-self: flex-start;
+    }
 
-circle.on{
-  opacity:0.8;
-}
+    svg { width: 100%; max-width: 300px; }
 
-circle.eu{
-  fill:gold;
-  opacity:1;
-  filter: drop-shadow(0 0 4px rgba(255,215,0,0.6));
-}
-circle.qualified{
-  stroke:gold;
-  stroke-width:2;
-  opacity:1;
-}
-#info{
-  width:90%;
-  max-width:700px;
-  margin-top:25px;
-  text-align:center;
-  color:#003366;
-  font-size:13px;
-  line-height:1.6;
-  word-break:break-word;
-}
+    circle { fill: #003366; }
+    circle.vazio { fill: none; stroke: #003366; stroke-width: 1.5; opacity: .2; }
+    line { stroke: #003366; stroke-width: 1; opacity: .12; }
 
-#info p{
-  margin:8px 0;
-}
+    text {
+      font-family: Consolas, monospace;
+      fill: #003366;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      font-size: 9px;
+      opacity: .5;
+    }
 
-#convites{
-  width:90%;
-  max-width:700px;
-  margin-top:10px;
-  text-align:center;
-}
+    text.nome { font-size: 10px; opacity: .8; }
 
-#convites p{
-  color:#003366;
-  font-size:12px;
-  margin:12px 0 6px;
-}
+    .link-area { margin-top: 40px; width: 100%; max-width: 300px; }
 
-#convites input{
-  width:100%;
-  box-sizing:border-box;
-  border:1px solid #003366;
-  padding:10px;
-  font-family:Consolas, monospace;
-  font-size:12px;
-  color:#003366;
-  background:#fff;
-}
+    .link-rotulo {
+      font-size: 10px;
+      letter-spacing: 2px;
+      opacity: .3;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
 
-.convite-actions{
-  margin-top:6px;
-  margin-bottom:12px;
-}
+    .link {
+      font-size: 10px;
+      background: rgba(0,51,102,0.04);
+      border: 1px solid rgba(0,51,102,0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      word-break: break-all;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
 
-.convite-actions button{
-  background:none;
-  border:1px solid #003366;
-  color:#003366;
-  padding:6px 10px;
-  font-size:11px;
-  cursor:pointer;
-  transition:0.2s;
-}
+    .fila { width: 100%; list-style: none; align-self: flex-start; margin-top: 48px; }
 
-.convite-actions button:hover{
-  background:#003366;
-  color:#fff;
-}
+    .fila li {
+      display: flex;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid rgba(0,51,102,0.08);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
 
-#curso{
-  max-width:700px;
-  width:90%;
-  overflow:hidden;
-  max-height:0;
-  opacity:0;
-  transition:0.5s;
-}
+    .fila .pos { opacity: .3; min-width: 16px; }
+    .fila .n   { flex: 1; opacity: .7; }
+    .fila .g   { opacity: .35; }
 
-#curso.ativo{
-  max-height:1000px;
-  opacity:1;
-  margin-top:25px;
-  margin-bottom:30px;
-}
+    .vazio-msg { font-size: 11px; opacity: .25; margin-top: 16px; }
 
-#cursoConteudo{
-  border:1px solid #003366;
-  padding:16px;
-  color:#003366;
-  font-size:13px;
-  line-height:1.6;
-}
-
-#seguranca{
-  width:90%;
-  max-width:700px;
-  margin-top:18px;
-  text-align:center;
-  color:#666;
-  font-size:11px;
-  margin-bottom:20px;
-}
-</style>
+    @media (max-width: 600px) {
+      .main { grid-template-columns: 1fr; }
+      .col:first-child { border-right: none; border-bottom: 1px solid rgba(0,51,102,0.10); }
+    }
+  </style>
 </head>
-
 <body>
 
-<div id="topbar">
-  <button onclick="toggleCurso()">Masterminds</button>
-  <button onclick="logout()">Sair</button>
-</div>
+<header>
+  <span class="email" id="email"></span>
+  <button onclick="sair()">Sair</button>
+</header>
 
-<div id="matriz">
-  <svg viewBox="0 0 480 460">
-    <line x1="240" y1="60" x2="120" y2="200"/>
-    <line x1="240" y1="60" x2="360" y2="200"/>
+<div class="main">
 
-    <line x1="120" y1="200" x2="60" y2="360"/>
-    <line x1="120" y1="200" x2="180" y2="360"/>
+  <div class="col">
+    <div class="rotulo">matriz</div>
 
-    <line x1="360" y1="200" x2="300" y2="360"/>
-    <line x1="360" y1="200" x2="420" y2="360"/>
+    <svg viewBox="0 0 300 260">
+      <line x1="150" y1="65" x2="75"  y2="180"/>
+      <line x1="150" y1="65" x2="225" y2="180"/>
 
-    <circle id="maa" cx="60" cy="360" r="5"/>
-    <circle id="mab" cx="180" cy="360" r="5"/>
-    <circle id="mba" cx="300" cy="360" r="5"/>
-    <circle id="mbb" cx="420" cy="360" r="5"/>
+      <circle cx="150" cy="55" r="22"/>
+      <text x="150" y="49">eu</text>
+      <text x="150" y="60" class="nome" id="eu-nome"></text>
 
-    <circle id="ma" cx="120" cy="200" r="6.5"/>
-    <circle id="mb" cx="360" cy="200" r="6.5"/>
-    <circle id="m" cx="240" cy="60" r="8"/>
-  </svg>
-</div>
+      <circle cx="75"  cy="185" r="18" class="vazio" id="circ-ultra"/>
+      <text x="75"  y="179">ultra</text>
+      <text x="75"  y="190" class="nome" id="ultra-nome"></text>
 
-<div id="info"></div>
+      <circle cx="225" cy="185" r="18" class="vazio" id="circ-super"/>
+      <text x="225" y="179">super</text>
+      <text x="225" y="190" class="nome" id="super-nome"></text>
+    </svg>
 
-<div id="convites">
-  <p>Seu convite</p>
-  <input id="convite" readonly>
-  <div class="convite-actions">
-    <button onclick="copiarConvite('convite', this)">Copiar convite</button>
+    <div class="link-area">
+      <div class="link-rotulo">link de convite</div>
+      <div class="link" id="link"></div>
+      <button onclick="copiar()">Copiar</button>
+      <div style="font-size:10px;opacity:.35;margin-top:6px;min-height:14px" id="fb"></div>
+    </div>
   </div>
-</div>
 
-<div id="seguranca">
-  A sessão será encerrada automaticamente após 10 minutos de inatividade.
-</div>
-
-<div id="curso">
-  <div id="cursoConteudo">
-    Curso aqui
+  <div class="col">
+    <div class="rotulo">fila</div>
+    <ul class="fila" id="fila"></ul>
   </div>
+
 </div>
 
 <script type="module">
-import { auth, db } from "./firebase.js";
-import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { auth, db } from "./firebase.js";
+  import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function limparMatriz(){
-  document.querySelectorAll("circle").forEach(c => {
-    c.classList.remove("on", "eu");
+  onAuthStateChanged(auth, async user => {
+    if (!user) { location.href = "index.html"; return; }
+
+    document.getElementById("email").textContent = user.email;
+    document.getElementById("eu-nome").textContent = user.email.split("@")[0];
+
+    const link = `https://grlnetwork.com/cadastro.html?ref=${user.uid}`;
+    document.getElementById("link").textContent = link;
+
+    const snap = await getDocs(query(
+      collection(db, "usuarios"),
+      where("sponsor", "==", user.uid),
+      orderBy("grade", "desc"),
+      orderBy("ts", "asc")
+    ));
+
+    const lista = [];
+    snap.forEach(d => lista.push(d.data()));
+
+    if (lista[0]) {
+      document.getElementById("circ-ultra").classList.remove("vazio");
+      document.getElementById("ultra-nome").textContent = lista[0].email.split("@")[0];
+    }
+    if (lista[1]) {
+      document.getElementById("circ-super").classList.remove("vazio");
+      document.getElementById("super-nome").textContent = lista[1].email.split("@")[0];
+    }
+
+    const fila = document.getElementById("fila");
+    fila.innerHTML = !lista.length
+      ? '<li class="vazio-msg">nenhum indicado ainda</li>'
+      : lista.map((u, i) => `
+          <li>
+            <span class="pos">${i + 1}</span>
+            <span class="n">${u.email.split("@")[0]}</span>
+            <span class="g">${u.grade > 0 ? "g" + u.grade : "—"}</span>
+          </li>`).join("");
   });
-}
 
-function marcar(slot, uid, meuUid){
-  const slotId = String(slot || "").trim().toLowerCase();
-  const el = document.getElementById(slotId);
-  if(!el){
-    console.warn("slot-html-nao-encontrado:", slotId);
-    return;
-  }
-
-  el.classList.add("on");
-
-  if(uid === meuUid){
-    el.classList.add("eu");
-  }
-}
-
-function marcarMinhaPosicao(slot){
-  const slotId = String(slot || "").trim().toLowerCase();
-  const el = document.getElementById(slotId);
-  if(!el){
-    return;
-  }
-  el.classList.add("on", "eu");
-}
-function marcarQualificado(slot){
-  const slotId = String(slot || "").trim().toLowerCase();
-  const el = document.getElementById(slotId);
-
-  if(!el){
-    return;
-  }
-
-  el.classList.add("qualified");
-}
-function slotPertenceAoUsuario(slotValue, uid){
-  if(!slotValue || !uid) return false;
-  if(String(slotValue) === String(uid)) return true;
-  if(typeof slotValue === "object"){
-    if(slotValue.uid && String(slotValue.uid) === String(uid)) return true;
-    if(slotValue.userUid && String(slotValue.userUid) === String(uid)) return true;
-  }
-  return false;
-}
-
-function toggleCurso(){
-  const curso = document.getElementById("curso");
-  if(curso) curso.classList.toggle("ativo");
-}
-
-async function copiarConvite(inputId, botao){
-  const input = document.getElementById(inputId);
-  if(!input || !input.value){
-    return;
-  }
-
-  const textoOriginal = botao ? botao.textContent : "";
-
-  try{
-    if(navigator.clipboard && window.isSecureContext){
-      await navigator.clipboard.writeText(input.value);
-    }else{
-      input.select();
-      input.setSelectionRange(0, input.value.length);
-      document.execCommand("copy");
-      window.getSelection().removeAllRanges();
-    }
-
-    if(botao){
-      botao.textContent = "Copiado!";
-      setTimeout(()=>{
-        botao.textContent = textoOriginal;
-      }, 1200);
-    }
-  }catch(error){
-    console.error("Erro ao copiar convite:", error);
-  }
-}
-
-async function logout(){
-  try{
-    await signOut(auth);
-    window.location.href = "index.html";
-  }catch(error){
-    console.error("Erro ao sair:", error);
-  }
-}
-
-window.toggleCurso = toggleCurso;
-window.logout = logout;
-window.copiarConvite = copiarConvite;
-
-let timeoutInatividade;
-
-function resetTimer(){
-  clearTimeout(timeoutInatividade);
-
-  timeoutInatividade = setTimeout(async ()=>{
-    try{
-      await signOut(auth);
-      window.location.href = "index.html";
-    }catch(error){
-      console.error("Erro ao encerrar sessão:", error);
-    }
-  }, 10 * 60 * 1000);
-}
-
-["click","mousemove","keydown","touchstart","scroll"].forEach(evento => {
-  document.addEventListener(evento, resetTimer, { passive:true });
-});
-
-resetTimer();
-
-onAuthStateChanged(auth, async (user)=>{
-  const info = document.getElementById("info");
-  const inputConvite = document.getElementById("convite");
-
-  try{
-    if(info) info.innerHTML = "<p>Carregando...</p>";
-
-    if(!user){
-      window.location.href = "index.html";
-      return;
-    }
-
-    limparMatriz();
-
-    if(!inputConvite) throw new Error("html-convite");
-    if(!info) throw new Error("html-info");
-
-    const baseUrl = window.location.origin + "/index.html";
-    const linkConvite = baseUrl + "?ref=" + user.uid;
-
-    inputConvite.value = linkConvite;
-
-    const userRef = doc(db, "usuarios", user.uid);
-    const userSnap = await getDoc(userRef);
-    if(!userSnap.exists()) throw new Error("firestore-user");
-
-    const data = userSnap.data();
-    const matrizId = data.matrizId;
-    if(!matrizId) throw new Error("user-sem-matrizId");
-
-    const matrizRef = doc(db, "matrizes", matrizId);
-    const matrizSnap = await getDoc(matrizRef);
-    if(!matrizSnap.exists()) throw new Error("firestore-matriz:" + matrizId);
-
-    const matrizData = matrizSnap.data();
-    const slots = matrizData.slots || {};
-
-    let minhaPosicaoDetectada = "";
-
-    Object.entries(slots).forEach(([slotKey, slotUid])=>{
-      if(slotUid){
-        marcar(slotKey, slotUid, user.uid);
-        if(slotPertenceAoUsuario(slotUid, user.uid)){
-          minhaPosicaoDetectada = slotKey;
-        }
-      }
+  window.copiar = () => {
+    navigator.clipboard.writeText(document.getElementById("link").textContent).then(() => {
+      const fb = document.getElementById("fb");
+      fb.textContent = "copiado.";
+      setTimeout(() => fb.textContent = "", 2000);
     });
+  };
 
-   const posicaoNosSlots = Object.keys(slots).find(
-  (slotKey) => String(slots[slotKey]) === String(user.uid)
-);
-
-if(posicaoNosSlots && posicaoNosSlots !== "maa"){
-  minhaPosicaoDetectada = posicaoNosSlots;
-  marcarMinhaPosicao(posicaoNosSlots);
-}
-   if(!minhaPosicaoDetectada && data.slotAtual && data.slotAtual !== "maa"){
-  minhaPosicaoDetectada = data.slotAtual;
-  marcarMinhaPosicao(data.slotAtual);
-}
-
-const posicaoOficial = data.slotAtual || null;
-
-if(posicaoOficial && posicaoOficial !== "maa"){
-  minhaPosicaoDetectada = posicaoOficial;
-  marcarMinhaPosicao(posicaoOficial);
-}
-
-if(posicaoNosSlots && posicaoOficial && posicaoNosSlots !== posicaoOficial){
-  console.warn("INCONSISTÊNCIA DE POSIÇÃO:", {
-    uid: user.uid,
-    posicaoOficial,
-    posicaoNosSlots
-  });
-}
-    const convidadosDiretos = Array.isArray(data.convidadosDiretos)
-  ? data.convidadosDiretos.length
-  : Number(data.convidadosCount || 0);
-
-const topoStatus = slots.m ? "ocupado" : "vazio";
-
-    info.innerHTML = `
-      <p><b>${data.nome || "Usuário"}</b></p>
-      <p>${data.email || ""}</p>
-      <p>Status: ${data.status || "open"}</p>
-      <p>Pai: ${data.parent || "sem pai"}</p>
-      <p>Matriz: ${matrizId}</p>
-      <p>Minha posição detectada: ${minhaPosicaoDetectada || "não encontrada"}</p>
-      <p>Topo (m): ${topoStatus}</p>
-      <p>Convidados diretos: ${convidadosDiretos}/2</p>
-    `;
-  }catch(error){
-    console.error("ERRO DASHBOARD:", error);
-
-    if(info){
-      info.innerHTML = `
-        <p><b>Erro ao carregar dashboard</b></p>
-        <p>${error.message || error}</p>
-      `;
-    }
-  }
-});
+  window.sair = async () => {
+    await signOut(auth);
+    location.href = "index.html";
+  };
 </script>
+
 </body>
 </html>
