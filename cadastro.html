@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRL Network — Cadastro</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: Consolas, monospace;
+      color: #003366;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 380px;
+      border: 1px solid rgba(0,51,102,0.12);
+      border-radius: 16px;
+      padding: 32px 24px;
+      box-shadow: 0 8px 32px rgba(0,51,102,0.07);
+    }
+
+    .titulo { font-size: 13px; letter-spacing: 3px; text-transform: uppercase; opacity: .4; margin-bottom: 8px; }
+    .subtitulo { font-size: 18px; font-weight: 600; color: #003366; margin-bottom: 28px; }
+
+    .metodos { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+    .metodo {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; border: 1px solid rgba(0,51,102,0.15);
+      border-radius: 10px; cursor: pointer;
+      transition: border-color .2s, background .2s; user-select: none;
+    }
+
+    .metodo:hover { border-color: #003366; background: rgba(0,51,102,0.03); }
+    .metodo.selecionado { border-color: #003366; background: rgba(0,51,102,0.05); }
+    .metodo-nome { font-size: 13px; font-weight: 500; }
+    .metodo-valor { font-size: 15px; font-weight: 700; color: #003366; }
+    .metodo-desconto { font-size: 10px; opacity: .45; margin-top: 2px; text-align: right; }
+
+    .btn-pagar {
+      width: 100%; padding: 14px; background: #003366; color: #fff;
+      border: none; border-radius: 10px; font-family: Consolas, monospace;
+      font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; transition: opacity .2s; margin-bottom: 16px;
+    }
+
+    .btn-pagar:hover { opacity: .88; }
+    .btn-pagar:disabled { opacity: .35; cursor: default; }
+    .rodape { font-size: 10px; opacity: .35; text-align: center; letter-spacing: 1px; }
+    .convite-info { font-size: 10px; opacity: .35; text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
+
+    .aguardando { text-align: center; padding: 16px 0; }
+    .aguardando-icone { font-size: 32px; margin-bottom: 12px; animation: pulsar 1.2s infinite; }
+    @keyframes pulsar { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+    .aguardando-titulo { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .aguardando-texto { font-size: 11px; opacity: .5; line-height: 1.6; }
+
+    .confirmacao { display: none; text-align: center; }
+    .confirmacao-icone { font-size: 40px; margin-bottom: 16px; }
+    .confirmacao-titulo { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .confirmacao-texto { font-size: 12px; opacity: .55; line-height: 1.6; margin-bottom: 24px; }
+
+    .credencial {
+      background: rgba(0,51,102,0.05); border: 1px solid rgba(0,51,102,0.15);
+      border-radius: 10px; padding: 16px; margin-bottom: 12px; text-align: left;
+    }
+
+    .credencial-label { font-size: 9px; opacity: .4; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+    .credencial-valor { font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+
+    .aviso { font-size: 10px; opacity: .45; text-align: center; margin-bottom: 20px; line-height: 1.6; }
+
+    .btn-entrar {
+      width: 100%; padding: 14px; background: #003366; color: #fff;
+      border: none; border-radius: 10px; font-family: Consolas, monospace;
+      font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+      cursor: pointer; text-decoration: none; display: block;
+      text-align: center; transition: opacity .2s;
+    }
+
+    .btn-entrar:hover { opacity: .88; }
+
+    .erro { text-align: center; }
+    .erro-icone { font-size: 32px; margin-bottom: 12px; }
+    .erro-titulo { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .erro-texto { font-size: 11px; opacity: .5; line-height: 1.6; margin-bottom: 20px; }
+    .btn-voltar {
+      font-family: Consolas, monospace; font-size: 11px; color: #003366;
+      background: transparent; border: 1px solid rgba(0,51,102,0.25);
+      border-radius: 8px; padding: 8px 20px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <div id="telaPagamento">
+      <div class="titulo">GRL Network</div>
+      <div class="subtitulo">Masterminds</div>
+      <div class="convite-info" id="conviteInfo">convite de —</div>
+
+      <div class="metodos">
+        <div class="metodo selecionado" onclick="selecionarMetodo(this, 'pix', 505)">
+          <div><div class="metodo-nome">Pix</div></div>
+          <div>
+            <div class="metodo-valor">R$ 505,00</div>
+            <div class="metodo-desconto">menor taxa</div>
+          </div>
+        </div>
+        <div class="metodo" onclick="selecionarMetodo(this, 'debito', 520)">
+          <div><div class="metodo-nome">Cartão de débito</div></div>
+          <div><div class="metodo-valor">R$ 520,00</div></div>
+        </div>
+        <div class="metodo" onclick="selecionarMetodo(this, 'credito', 525)">
+          <div><div class="metodo-nome">Cartão de crédito</div></div>
+          <div><div class="metodo-valor">R$ 525,00</div></div>
+        </div>
+      </div>
+
+      <button class="btn-pagar" id="btnPagar" onclick="pagar()">
+        Pagar com Mercado Pago
+      </button>
+      <div class="rodape">pagamento seguro via Mercado Pago</div>
+    </div>
+
+    <div id="telaAguardando" style="display:none;">
+      <div class="aguardando">
+        <div class="aguardando-icone">⟳</div>
+        <div class="aguardando-titulo">Processando cadastro</div>
+        <div class="aguardando-texto">Aguarde enquanto confirmamos seu pagamento e criamos seu acesso.</div>
+      </div>
+    </div>
+
+    <div class="confirmacao" id="telaConfirmacao">
+      <div class="confirmacao-icone">✓</div>
+      <div class="confirmacao-titulo">Cadastro concluído</div>
+      <div class="confirmacao-texto">Seu acesso foi criado. Anote as credenciais abaixo.</div>
+
+      <div class="credencial">
+        <div class="credencial-label">e-mail</div>
+        <div class="credencial-valor" id="credEmail">—</div>
+      </div>
+      <div class="credencial">
+        <div class="credencial-label">senha temporária</div>
+        <div class="credencial-valor" id="credSenha">—</div>
+      </div>
+
+      <div class="aviso">Anote sua senha antes de continuar. Você poderá alterá-la depois.</div>
+      <a href="index.html" class="btn-entrar">Entrar na plataforma</a>
+    </div>
+
+    <div class="erro" id="telaErro" style="display:none;">
+      <div class="erro-icone">!</div>
+      <div class="erro-titulo">Pagamento recebido</div>
+      <div class="erro-texto">
+        Seu pagamento foi confirmado, mas houve um atraso no processamento.
+        Aguarde alguns minutos e recarregue a página. Se persistir, entre em contato informando seu e-mail do Mercado Pago.
+      </div>
+      <button class="btn-voltar" onclick="window.location.reload()">Tentar novamente</button>
+    </div>
+
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const ref    = params.get("ref") || "";
+    const status = params.get("status");
+
+    document.getElementById("conviteInfo").textContent =
+      ref ? "convite de " + ref.substring(0, 8).toUpperCase() : "convite inválido";
+
+    let metodoAtual = "pix";
+    let valorAtual  = 505;
+
+    function selecionarMetodo(el, metodo, valor) {
+      document.querySelectorAll(".metodo").forEach(m => m.classList.remove("selecionado"));
+      el.classList.add("selecionado");
+      metodoAtual = metodo;
+      valorAtual  = valor;
+    }
+
+    async function pagar() {
+      if (!ref) { alert("Link de convite inválido."); return; }
+      const btn = document.getElementById("btnPagar");
+      btn.disabled = true;
+      btn.textContent = "Aguardando...";
+
+      try {
+        const res = await fetch("https://grl-backend-vvef.onrender.com/criar-pagamento", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ valor: valorAtual, metodo: metodoAtual, ref }),
+        });
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error("sem URL");
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = "Pagar com Mercado Pago";
+        alert("Erro ao iniciar pagamento. Tente novamente.");
+      }
+    }
+
+    if (status === "aprovado") {
+      document.getElementById("telaPagamento").style.display = "none";
+      document.getElementById("telaAguardando").style.display = "block";
+      buscarCredenciais(0);
+    }
+
+    async function buscarCredenciais(tentativa) {
+      if (tentativa >= 8) {
+        document.getElementById("telaAguardando").style.display = "none";
+        document.getElementById("telaErro").style.display = "block";
+        return;
+      }
+      try {
+        const res = await fetch(`https://grl-backend-vvef.onrender.com/credenciais?ref=${ref}`);
+        if (!res.ok) throw new Error("não encontrado");
+        const data = await res.json();
+        document.getElementById("telaAguardando").style.display = "none";
+        document.getElementById("telaConfirmacao").style.display = "block";
+        document.getElementById("credEmail").textContent = data.email;
+        document.getElementById("credSenha").textContent = data.senha;
+      } catch (e) {
+        setTimeout(() => buscarCredenciais(tentativa + 1), 2000);
+      }
+    }
+  </script>
+
+</body>
+</html>
