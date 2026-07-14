@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRL Network — Matriz</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f8f8f8;
+      font-family: Consolas, monospace;
+      color: #003366;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 44px;
+      background: #fff;
+      border-bottom: 1px solid rgba(0,51,102,0.1);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .header-titulo { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: .4; }
+
+    .zoom-info {
+      font-size: 10px;
+      opacity: .35;
+      margin-left: auto;
+    }
+
+    .btn-reset {
+      font-family: Consolas, monospace;
+      font-size: 10px;
+      color: #003366;
+      background: transparent;
+      border: 1px solid rgba(0,51,102,0.2);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+
+    #canvas-container {
+      position: fixed;
+      top: 44px; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      cursor: grab;
+    }
+
+    #canvas-container:active { cursor: grabbing; }
+
+    #canvas {
+      position: absolute;
+      transform-origin: 0 0;
+    }
+
+    svg {
+      overflow: visible;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      background: #fff;
+      border: 1px solid rgba(0,51,102,0.15);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 11px;
+      pointer-events: none;
+      display: none;
+      z-index: 200;
+      box-shadow: 0 4px 16px rgba(0,51,102,0.1);
+    }
+
+    .tooltip-email { font-weight: 600; margin-bottom: 4px; }
+    .tooltip-info { opacity: .5; font-size: 10px; }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      opacity: .4;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="header-titulo">GRL Matrix</span>
+  <button class="btn-reset" onclick="resetView()">Centralizar</button>
+  <span class="zoom-info" id="zoomInfo">100%</span>
+</header>
+
+<div id="canvas-container">
+  <div id="canvas">
+    <svg id="svg"></svg>
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tooltip-email" id="tip-email"></div>
+  <div class="tooltip-info" id="tip-info"></div>
+</div>
+
+<div class="loading" id="loading">carregando matriz...</div>
+
+<script type="module">
+  import { db } from "./firebase.js";
+  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // ── CONFIGURAÇÕES ──
+  const NODE_R    = 18;
+  const H_GAP     = 60;
+  const V_GAP     = 90;
+  const BOOT_UID  = "GrlMotor";
+
+  // ── ESTADO DO PAN/ZOOM ──
+  let scale  = 1;
+  let transX = 0;
+  let transY = 0;
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+
+  const container = document.getElementById("canvas-container");
+  const canvas    = document.getElementById("canvas");
+  const svg       = document.getElementById("svg");
+  const tooltip   = document.getElementById("tooltip");
+
+  // ── ZOOM COM SCROLL ──
+  container.addEventListener("wheel", e => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+    const rect   = container.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top - 44;
+
+    transX = mx - factor * (mx - transX);
+    transY = my - factor * (my - transY);
+    scale  = Math.min(Math.max(scale * factor, 0.1), 5);
+    applyTransform();
+  }, { passive: false });
+
+  // ── PAN COM DRAG ──
+  container.addEventListener("mousedown", e => {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+
+  window.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    transX += e.clientX - lastX;
+    transY += e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    applyTransform();
+  });
+
+  window.addEventListener("mouseup", () => { dragging = false; });
+
+  // ── TOUCH ──
+  let lastTouchDist = null;
+  container.addEventListener("touchstart", e => {
+    if (e.touches.length === 1) {
+      dragging = true;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+    }
+  });
+
+  container.addEventListener("touchmove", e => {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+      const dx   = e.touches[0].clientX - e.touches[1].clientX;
+      const dy   = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (lastTouchDist) {
+        const factor = dist / lastTouchDist;
+        scale = Math.min(Math.max(scale * factor, 0.1), 5);
+        applyTransform();
+      }
+      lastTouchDist = dist;
+    } else if (e.touches.length === 1 && dragging) {
+      transX += e.touches[0].clientX - lastX;
+      transY += e.touches[0].clientY - lastY;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      applyTransform();
+    }
+  }, { passive: false });
+
+  container.addEventListener("touchend", () => {
+    dragging = false;
+    lastTouchDist = null;
+  });
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${transX}px, ${transY}px) scale(${scale})`;
+    document.getElementById("zoomInfo").textContent = Math.round(scale * 100) + "%";
+  }
+
+  window.resetView = function() {
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    transX = w / 2;
+    transY = 60;
+    scale  = 1;
+    applyTransform();
+  };
+
+  // ── CARREGAR DADOS ──
+  async function carregar() {
+    const snap = await getDocs(collection(db, "usuarios"));
+    const usuarios = {};
+
+    // Nó boot
+    usuarios[BOOT_UID] = { uid: BOOT_UID, email: "GrlMotor", sponsor: null, parent: null, grade: 0, filhos: [] };
+
+    snap.forEach(d => {
+      const u = d.data();
+      usuarios[u.uid] = { ...u, filhos: [] };
+    });
+
+    // Montar filhos
+    Object.values(usuarios).forEach(u => {
+      if (!u.parent) return;
+      const pai = usuarios[u.parent] || usuarios[BOOT_UID];
+      pai.filhos.push(u);
+    });
+
+    document.getElementById("loading").style.display = "none";
+    renderizar(usuarios[BOOT_UID], usuarios);
+    resetView();
+  }
+
+  // ── LAYOUT (BFS com posição x,y) ──
+  function calcLayout(raiz) {
+    const nos = [];
+    const fila = [{ no: raiz, depth: 0, index: 0, total: 1 }];
+
+    // Calcula largura de cada subárvore
+    function largura(no) {
+      if (!no.filhos.length) return 1;
+      return no.filhos.reduce((s, f) => s + largura(f), 0);
+    }
+
+    function posicionar(no, depth, xOffset) {
+      const l = largura(no);
+      const x = xOffset + l / 2;
+      const y = depth * V_GAP;
+      nos.push({ no, x, y, depth });
+
+      let cx = xOffset;
+      no.filhos.forEach(filho => {
+        const fl = largura(filho);
+        posicionar(filho, depth + 1, cx);
+        cx += fl;
+      });
+    }
+
+    posicionar(raiz, 0, 0);
+
+    // Escala horizontal
+    const scale = H_GAP;
+    nos.forEach(n => { n.x *= scale; });
+
+    return nos;
+  }
+
+  // ── RENDERIZAR SVG ──
+  function renderizar(raiz) {
+    const nos = calcLayout(raiz);
+    const byUid = {};
+    nos.forEach(n => { byUid[n.no.uid] = n; });
+
+    let minX = Infinity, maxX = -Infinity, maxY = -Infinity;
+    nos.forEach(n => {
+      minX = Math.min(minX, n.x);
+      maxX = Math.max(maxX, n.x);
+      maxY = Math.max(maxY, n.y);
+    });
+
+    const W = maxX - minX + NODE_R * 4 + 40;
+    const H = maxY + NODE_R * 4 + 40;
+    svg.setAttribute("width",  W);
+    svg.setAttribute("height", H);
+
+    const offX = -minX + NODE_R * 2 + 20;
+    const offY = NODE_R * 2 + 20;
+
+    let html = "";
+
+    // Linhas
+    nos.forEach(({ no, x, y }) => {
+      no.filhos.forEach(filho => {
+        const f = byUid[filho.uid];
+        if (!f) return;
+        html += `<line 
+          x1="${x + offX}" y1="${y + offY}" 
+          x2="${f.x + offX}" y2="${f.y + offY}"
+          stroke="#003366" stroke-width="1" opacity="0.15"/>`;
+      });
+    });
+
+    // Nós
+    nos.forEach(({ no, x, y }) => {
+      const cx = x + offX;
+      const cy = y + offY;
+      const isBoot = no.uid === BOOT_UID;
+      const label  = isBoot ? "GRL" : no.email.split("@")[0].substring(0, 6);
+      const fill   = isBoot ? "#003366" : (no.grade > 0 ? "#1a5c99" : "#003366");
+      const op     = isBoot ? "1" : "0.85";
+
+      html += `
+        <g class="no" data-uid="${no.uid}" data-email="${no.email}" data-grade="${no.grade}" style="cursor:pointer">
+          <circle cx="${cx}" cy="${cy}" r="${isBoot ? NODE_R + 4 : NODE_R}" 
+            fill="${fill}" opacity="${op}"/>
+          <text x="${cx}" y="${cy}" 
+            text-anchor="middle" dominant-baseline="middle"
+            font-family="Consolas,monospace" font-size="${isBoot ? 9 : 8}" 
+            fill="#fff" opacity="0.9">${label}</text>
+        </g>`;
+    });
+
+    svg.innerHTML = html;
+
+    // Tooltip
+    svg.querySelectorAll(".no").forEach(el => {
+      el.addEventListener("mouseenter", e => {
+        const uid   = el.dataset.uid;
+        const email = el.dataset.email;
+        const grade = el.dataset.grade;
+        document.getElementById("tip-email").textContent = email;
+        document.getElementById("tip-info").textContent  = uid === BOOT_UID ? "raiz da matriz" : `grade ${grade}`;
+        tooltip.style.display = "block";
+      });
+      el.addEventListener("mousemove", e => {
+        tooltip.style.left = (e.clientX + 12) + "px";
+        tooltip.style.top  = (e.clientY - 32) + "px";
+      });
+      el.addEventListener("mouseleave", () => {
+        tooltip.style.display = "none";
+      });
+    });
+  }
+
+  carregar();
+</script>
+
+</body>
+</html>
