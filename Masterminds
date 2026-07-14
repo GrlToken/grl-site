@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masterminds</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #fff;
+      font-family: Consolas, monospace;
+      color: #003366;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid rgba(0,51,102,0.12);
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 100;
+    }
+
+    .header-titulo { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: .4; }
+
+    .btn-voltar {
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      color: #003366;
+      background: transparent;
+      border: 1px solid rgba(0,51,102,0.25);
+      border-radius: 8px;
+      padding: 5px 12px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 45px);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      border-right: 1px solid rgba(0,51,102,0.10);
+      padding: 32px 16px;
+      position: sticky;
+      top: 45px;
+      height: calc(100vh - 45px);
+      overflow-y: auto;
+    }
+
+    .sidebar-titulo {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: .3;
+      margin-bottom: 20px;
+    }
+
+    .modulo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background .15s;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: Consolas, monospace;
+      color: #003366;
+    }
+
+    .modulo-item:hover { background: rgba(0,51,102,0.04); }
+    .modulo-item.ativo { background: rgba(0,51,102,0.08); }
+
+    .modulo-num {
+      font-size: 9px;
+      opacity: .3;
+      min-width: 20px;
+    }
+
+    .modulo-nome {
+      font-size: 11px;
+      opacity: .7;
+      line-height: 1.4;
+    }
+
+    .modulo-item.ativo .modulo-nome { opacity: 1; font-weight: 600; }
+
+    /* CONTEÚDO */
+    .conteudo {
+      padding: 48px 40px;
+      max-width: 680px;
+    }
+
+    .mod-tag {
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: .3;
+      margin-bottom: 8px;
+    }
+
+    .mod-titulo {
+      font-size: 24px;
+      font-weight: 700;
+      color: #003366;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .mod-subtitulo {
+      font-size: 11px;
+      opacity: .35;
+      letter-spacing: 1px;
+      margin-bottom: 40px;
+      text-transform: uppercase;
+    }
+
+    .mod-secao {
+      margin-bottom: 36px;
+    }
+
+    .mod-secao h2 {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .4;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,51,102,0.08);
+    }
+
+    .mod-secao p {
+      font-size: 13px;
+      line-height: 1.8;
+      opacity: .75;
+      margin-bottom: 12px;
+    }
+
+    .mod-secao ul {
+      list-style: none;
+      margin-bottom: 12px;
+    }
+
+    .mod-secao ul li {
+      font-size: 13px;
+      line-height: 1.8;
+      opacity: .75;
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+
+    .mod-secao ul li::before {
+      content: "—";
+      position: absolute;
+      left: 0;
+      opacity: .4;
+    }
+
+    .citacao {
+      border-left: 2px solid rgba(0,51,102,0.2);
+      padding: 12px 20px;
+      margin: 20px 0;
+      font-size: 13px;
+      font-style: italic;
+      opacity: .6;
+      line-height: 1.7;
+    }
+
+    .desafio {
+      background: rgba(0,51,102,0.03);
+      border: 1px solid rgba(0,51,102,0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .desafio-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .desafio-num {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: .4;
+    }
+
+    .desafio-duracao {
+      font-size: 9px;
+      opacity: .35;
+      margin-left: auto;
+    }
+
+    .desafio-titulo {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .desafio p {
+      font-size: 12px;
+      line-height: 1.7;
+      opacity: .65;
+      margin-bottom: 6px;
+    }
+
+    .desafio-reflexao {
+      font-size: 11px;
+      opacity: .45;
+      font-style: italic;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(0,51,102,0.08);
+    }
+
+    .nav-modulos {
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid rgba(0,51,102,0.08);
+    }
+
+    .btn-nav {
+      font-family: Consolas, monospace;
+      font-size: 11px;
+      color: #003366;
+      background: transparent;
+      border: 1px solid rgba(0,51,102,0.25);
+      border-radius: 8px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-nav:hover { background: rgba(0,51,102,0.04); }
+    .btn-nav.primario { background: #003366; color: #fff; border-color: #003366; }
+    .btn-nav.primario:hover { opacity: .88; }
+
+    @media (max-width: 640px) {
+      .container { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid rgba(0,51,102,0.10); padding: 20px 16px; }
+      .conteudo { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="header-titulo">Masterminds</span>
+  <a href="dashboard.html" class="btn-voltar">← Voltar</a>
+</header>
+
+<div class="container">
+
+  <nav class="sidebar">
+    <div class="sidebar-titulo">Módulos</div>
+    <button class="modulo-item ativo" onclick="mostrar(0)">
+      <span class="modulo-num">00</span>
+      <span class="modulo-nome">Introdução</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(1)">
+      <span class="modulo-num">01</span>
+      <span class="modulo-nome">Controle de Frame</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(2)">
+      <span class="modulo-num">02</span>
+      <span class="modulo-nome">Rapport</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(3)">
+      <span class="modulo-num">03</span>
+      <span class="modulo-nome">Escuta Ativa</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(4)">
+      <span class="modulo-num">04</span>
+      <span class="modulo-nome">Comunicação Não-Violenta</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(5)">
+      <span class="modulo-num">05</span>
+      <span class="modulo-nome">Storytelling</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(6)">
+      <span class="modulo-num">06</span>
+      <span class="modulo-nome">Feedback Estruturado</span>
+    </button>
+    <button class="modulo-item" onclick="mostrar(7)">
+      <span class="modulo-num">07</span>
+      <span class="modulo-nome">Gestão de Silêncio</span>
+    </button>
+  </nav>
+
+  <main class="conteudo" id="conteudo"></main>
+
+</div>
+
+<script>
+const modulos = [
+  {
+    num: "Introdução",
+    titulo: "Bem-vindo ao Masterminds",
+    subtitulo: "Para profissionais iniciantes que querem dominar a arte das relações humanas",
+    secoes: [
+      {
+        titulo: "O que é o Masterminds?",
+        corpo: `<p>O Masterminds é um treinamento prático de comunicação humana. Ele parte de uma premissa simples: a forma como você se comunica determina a qualidade das suas relações — e a qualidade das suas relações determina os resultados da sua vida.</p>
+        <p>Aqui você não vai aprender técnicas de manipulação. Vai aprender a se comunicar com mais presença, clareza e autenticidade — porque essas são as bases de qualquer influência genuína.</p>
+        <div class="citacao">"Comunicação não é o que você diz. É o que o outro sente depois que você fala."</div>`
+      },
+      {
+        titulo: "Para quem é este curso?",
+        corpo: `<p>Para profissionais iniciantes que percebem que conhecimento técnico não é suficiente — e que a diferença entre quem avança e quem estagna muitas vezes está na capacidade de se relacionar, de se expressar e de conduzir conversas.</p>
+        <p>Não é necessário nenhum conhecimento prévio. O Masterminds começa do zero e evolui de forma gradual, com exercícios práticos aplicáveis no cotidiano.</p>`
+      },
+      {
+        titulo: "Os três pilares",
+        corpo: `<ul>
+          <li><strong>Linguagem Corporal</strong> — Mais de 80% da comunicação acontece antes de você abrir a boca. Postura, olhar, gesticulação, presença física — tudo isso fala.</li>
+          <li><strong>Oratória</strong> — A habilidade de usar a fala com intenção: ritmo, escolha de palavras, estrutura, presença vocal.</li>
+          <li><strong>Persuasão</strong> — A habilidade de conduzir uma conversa para um ponto de acordo genuíno. Sem forçar, sem manipular.</li>
+        </ul>
+        <div class="citacao">"Os três pilares se reforçam mutuamente. Quanto mais você desenvolve um, mais os outros crescem."</div>`
+      },
+      {
+        titulo: "Módulos",
+        corpo: `<ul>
+          <li>Módulo 01 — Controle de Frame · Oren Klaff</li>
+          <li>Módulo 02 — Rapport · Milton Erickson / Richard Bandler</li>
+          <li>Módulo 03 — Escuta Ativa · Carl Rogers</li>
+          <li>Módulo 04 — Comunicação Não-Violenta · Marshall Rosenberg</li>
+          <li>Módulo 05 — Storytelling · Robert McKee</li>
+          <li>Módulo 06 — Feedback Estruturado · Kim Scott</li>
+          <li>Módulo 07 — Gestão de Silêncio e Pausa · Thich Nhat Hanh</li>
+        </ul>
+        <div class="citacao">"Você não vai se tornar outra pessoa. Vai se tornar uma versão mais consciente de quem você já é."</div>`
+      }
+    ],
+    proximo: 1
+  },
+  {
+    num: "Módulo 01",
+    titulo: "Controle de Frame",
+    subtitulo: "Linguagem Corporal · Oratória · Persuasão",
+    secoes: [
+      {
+        titulo: "O que é Frame?",
+        corpo: `<p>Frame é o cenário mental de uma situação. É a perspectiva, o contexto e as regras não-ditas que definem como duas ou mais pessoas interpretam o que está acontecendo em uma conversa.</p>
+        <div class="citacao">"Quem define os termos da conversa, define o resultado da conversa."</div>
+        <p>Pense assim: imagine que a conversa é uma sala. O frame é quem escolhe onde cada um senta, qual é o assunto e qual é o tom. Quem controla o frame, controla a sala.</p>`
+      },
+      {
+        titulo: "Como saber se você perdeu o frame?",
+        corpo: `<ul>
+          <li>Você começa a se justificar sem que ninguém pedisse</li>
+          <li>Você sente necessidade de convencer a qualquer custo</li>
+          <li>Você abaixa o preço ou o valor antes de ser questionado</li>
+          <li>Você muda de assunto quando recebe uma objeção</li>
+          <li>Você ri nervoso ou pede desculpa sem motivo</li>
+        </ul>`
+      },
+      {
+        titulo: "Como manter o frame no dia a dia",
+        corpo: `<ul>
+          <li><strong>Postura antes da fala</strong> — Coluna ereta, contato visual, respiração calma.</li>
+          <li><strong>Nunca persiga, nunca implore</strong> — Quem corre atrás perde o frame.</li>
+          <li><strong>Responda sem se defender</strong> — Reconheça e redirecione.</li>
+          <li><strong>Use o silêncio como ferramenta</strong> — Quem fala primeiro depois do silêncio geralmente perde o frame.</li>
+          <li><strong>Mantenha opções abertas</strong> — Ter opções reais muda seu tom naturalmente.</li>
+        </ul>`
+      },
+      {
+        titulo: "Desafios Práticos",
+        corpo: `
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 1</span><span class="desafio-duracao">1 dia</span></div>
+          <div class="desafio-titulo">O Silêncio Consciente</div>
+          <p>Após fazer qualquer pedido ou proposta durante o dia, fique em silêncio e espere a resposta. Não complemente, não justifique. Apenas aguarde.</p>
+          <div class="desafio-reflexao">Observe quem fala primeiro após o silêncio. Isso revela quem tem o frame da situação.</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 2</span><span class="desafio-duracao">3 dias</span></div>
+          <div class="desafio-titulo">A Postura do Líder</div>
+          <p>Durante 3 dias, preste atenção consciente à sua postura em todas as interações. Coluna ereta, ombros abertos, olhar firme. Sem cruzar os braços.</p>
+          <div class="desafio-reflexao">Anote ao final de cada dia: houve alguma situação em que sua postura mudou o resultado da conversa?</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 3</span><span class="desafio-duracao">2 dias</span></div>
+          <div class="desafio-titulo">Não se justifique</div>
+          <p>Por 2 dias, elimine frases como "Sinto muito, mas..." ou "Desculpa te incomodar..." Substitua por afirmações diretas e educadas.</p>
+          <div class="desafio-reflexao">Documente 3 situações em que sentiu vontade de se justificar e como reagiu diferente.</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 4</span><span class="desafio-duracao">1 semana</span></div>
+          <div class="desafio-titulo">A Oferta sem Súplica</div>
+          <p>Apresente sua proposta para pelo menos 3 pessoas usando o frame de quem oferece valor. Termine sempre com: "Se fizer sentido pra você, ótimo. Se não, tudo bem também."</p>
+          <div class="desafio-reflexao">Registre as reações. Compare com abordagens anteriores onde você estava no frame de necessidade.</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 5</span><span class="desafio-duracao">1 semana</span></div>
+          <div class="desafio-titulo">Receba objeções sem defender</div>
+          <p>Quando alguém disser "não tenho dinheiro" ou "não acredito nisso", responda apenas com curiosidade: "Entendo. O que te faria mudar de ideia sobre isso?"</p>
+          <div class="desafio-reflexao">Quem dá uma explicação sem ser pedida está perdendo o frame. Observe isso em você e nos outros.</div>
+        </div>`
+      }
+    ],
+    anterior: 0, proximo: 2
+  },
+  {
+    num: "Módulo 02",
+    titulo: "Rapport",
+    subtitulo: "A conexão que abre portas antes de qualquer palavra de impacto",
+    secoes: [
+      {
+        titulo: "O que é Rapport?",
+        corpo: `<p>Rapport é o estado de conexão e sintonia entre duas pessoas. Quando existe rapport, a conversa flui naturalmente, a confiança se instala e a resistência diminui.</p>
+        <div class="citacao">"As pessoas não se conectam com o que você diz. Elas se conectam com o que sentem quando estão com você."</div>`
+      },
+      {
+        titulo: "Os três pilares do Rapport",
+        corpo: `<ul>
+          <li><strong>Espelhamento</strong> — Adotar sutilmente o ritmo, postura e linguagem do outro.</li>
+          <li><strong>Escuta ativa</strong> — Ouvir de verdade, sem formular resposta enquanto o outro fala.</li>
+          <li><strong>Validação emocional</strong> — Reconhecer o que o outro sente antes de apresentar qualquer ideia.</li>
+        </ul>`
+      },
+      {
+        titulo: "Como construir rapport de forma consciente",
+        corpo: `<ul>
+          <li><strong>Use o nome da pessoa</strong> — O nome próprio é o som mais agradável que alguém pode ouvir.</li>
+          <li><strong>Calibre seu ritmo ao dela</strong> — Ritmo compartilhado é conexão.</li>
+          <li><strong>Faça perguntas sobre ela</strong> — Pessoas adoram falar de si mesmas.</li>
+          <li><strong>Encontre pontos em comum</strong> — Semelhanças criam pertencimento.</li>
+          <li><strong>Seja presente de verdade</strong> — Celular no bolso, olhos no outro, mente na conversa.</li>
+        </ul>`
+      },
+      {
+        titulo: "Desafios Práticos",
+        corpo: `
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 1</span><span class="desafio-duracao">2 dias</span></div>
+          <div class="desafio-titulo">O Nome em Cena</div>
+          <p>Durante 2 dias, use o nome de cada pessoa com quem conversar pelo menos uma vez durante a interação.</p>
+          <div class="desafio-reflexao">Observe a reação das pessoas quando você usa o nome delas.</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 2</span><span class="desafio-duracao">3 dias</span></div>
+          <div class="desafio-titulo">Três Minutos de Presença Total</div>
+          <p>Em pelo menos uma conversa por dia, dedique 3 minutos de presença absoluta: celular guardado, olho no olho, sem pensar na resposta enquanto o outro fala.</p>
+          <div class="desafio-reflexao">O que você percebeu que normalmente não perceberia?</div>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio 3</span><span class="desafio-duracao">1 semana</span></div>
+          <div class="desafio-titulo">O Ponto em Comum</div>
+          <p>Em cada nova interação desta semana, busque ativamente um ponto em comum com a outra pessoa. Verbalize quando encontrar.</p>
+          <div class="desafio-reflexao">A conexão foi mais rápida quando você encontrou o ponto em comum?</div>
+        </div>`
+      }
+    ],
+    anterior: 1, proximo: 3
+  },
+  {
+    num: "Módulo 03",
+    titulo: "Escuta Ativa",
+    subtitulo: "Para profissionais que querem dominar a arte de ouvir de verdade",
+    secoes: [
+      {
+        titulo: "O que é Escuta Ativa?",
+        corpo: `<p>Escuta Ativa é a habilidade de ouvir com presença total — não apenas as palavras, mas o tom, as pausas, as emoções e o que não foi dito.</p>
+        <div class="citacao">"Quem sabe ouvir, raramente precisa convencer."</div>`
+      },
+      {
+        titulo: "Os 3 níveis de escuta",
+        corpo: `<ul>
+          <li><strong>Escuta superficial</strong> — Você ouve as palavras, mas sua mente está em outro lugar.</li>
+          <li><strong>Escuta seletiva</strong> — Você filtra o que te interessa e ignora o resto.</li>
+          <li><strong>Escuta ativa (plena)</strong> — Você está 100% presente. Capta palavras, tom, emoção e contexto.</li>
+        </ul>
+        <div class="citacao">"O nível 3 é raro. Quem o pratica se torna memorável."</div>`
+      },
+      {
+        titulo: "Como praticar Escuta Ativa",
+        corpo: `<ul>
+          <li><strong>Contato visual consistente</strong> — Olhe para a pessoa, não para o celular.</li>
+          <li><strong>Sinais de confirmação</strong> — Acenos, "hm", "entendo" — com moderação.</li>
+          <li><strong>Paráfrase e reflexão</strong> — Repita com suas próprias palavras o que entendeu.</li>
+          <li><strong>Perguntas de aprofundamento</strong> — Pergunte sobre o que foi dito, não sobre o que você quer explorar.</li>
+        </ul>`
+      },
+      {
+        titulo: "Desafio",
+        corpo: `<div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Desafio</span><span class="desafio-duracao">Hoje</span></div>
+          <div class="desafio-titulo">Escuta plena</div>
+          <p>Escolha uma conversa e aplique: não interrompa, faça ao menos uma pergunta de aprofundamento, e ao final faça uma paráfrase: "Se entendi bem..."</p>
+          <div class="desafio-reflexao">O que foi mais difícil — não interromper, formular a pergunta certa ou resistir ao impulso de já ter a resposta?</div>
+        </div>`
+      }
+    ],
+    anterior: 2, proximo: 4
+  },
+  {
+    num: "Módulo 04",
+    titulo: "Comunicação Não-Violenta",
+    subtitulo: "Falar de coração a coração · Marshall Rosenberg",
+    secoes: [
+      {
+        titulo: "O modelo OSEN",
+        corpo: `<p>A CNV repousa sobre quatro componentes:</p>
+        <ul>
+          <li><strong>O — Observação</strong> — Descreva o que aconteceu sem avaliar.</li>
+          <li><strong>S — Sentimento</strong> — Nomeie o que você sente de verdade.</li>
+          <li><strong>E — Necessidade</strong> — Identifique a necessidade humana universal por trás do sentimento.</li>
+          <li><strong>N — Pedido</strong> — Faça um pedido concreto, positivo e negociável.</li>
+        </ul>
+        <div class="citacao">"Toda crítica, julgamento e diagnóstico é a expressão trágica de uma necessidade não atendida." — Marshall Rosenberg</div>`
+      },
+      {
+        titulo: "A distinção que muda tudo",
+        corpo: `<p>Rosenberg distinguia dois tipos de linguagem: a linguagem do chacal e a linguagem da girafa. O chacal julga, compara e exige. A girafa observa com clareza e fala com vulnerabilidade.</p>
+        <p>A linguagem do chacal não é maldade — é o resultado de uma educação que nos ensinou a expressar necessidades por meio de críticas.</p>`
+      },
+      {
+        titulo: "Bloqueadores comuns",
+        corpo: `<ul>
+          <li>Julgamentos moralizantes: "você está errado"</li>
+          <li>Comparações: "seu colega nunca faz isso"</li>
+          <li>Negação de responsabilidade: "eu tive que fazer porque você..."</li>
+          <li>Exigências disfarçadas de pedidos</li>
+        </ul>`
+      },
+      {
+        titulo: "Exercícios Práticos",
+        corpo: `<div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 1</span></div>
+          <div class="desafio-titulo">Tradução do chacal para a girafa</div>
+          <p>Pegue uma crítica que você costuma fazer. Reescreva seguindo o modelo OSEN: O que observei sem julgamento / Quando isso acontece, sinto / Porque preciso de / Meu pedido é...</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 2</span></div>
+          <div class="desafio-titulo">Escuta empática de 5 minutos</div>
+          <p>Peça a alguém que fale sobre algo que está incomodando. Sua única tarefa: ouvir e refletir sentimento e necessidade. "Parece que você está [sentimento] porque precisa de [necessidade]. É isso?"</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 3</span><span class="desafio-duracao">3 dias</span></div>
+          <div class="desafio-titulo">Diário de necessidades</div>
+          <p>Ao fim de cada dia, escreva: um momento em que você se sentiu mal, que necessidade não estava sendo atendida, e que pedido você poderia ter feito.</p>
+        </div>`
+      }
+    ],
+    anterior: 3, proximo: 5
+  },
+  {
+    num: "Módulo 05",
+    titulo: "Storytelling",
+    subtitulo: "A estrutura invisível que move pessoas · Robert McKee",
+    secoes: [
+      {
+        titulo: "Por que histórias funcionam",
+        corpo: `<p>Argumentos convencem a mente. Histórias movem o corpo inteiro. Quando ouvimos uma boa história, nosso cérebro sincroniza com o do narrador — um fenômeno chamado neural coupling.</p>
+        <div class="citacao">"Histórias são a moeda da conexão humana. Quem conta as melhores histórias governa o mundo." — Robert McKee</div>`
+      },
+      {
+        titulo: "Os três elementos inegociáveis",
+        corpo: `<ul>
+          <li><strong>Personagem</strong> — Toda história precisa de alguém que o ouvinte possa acompanhar.</li>
+          <li><strong>Conflito</strong> — Sem conflito não há história — há relatório.</li>
+          <li><strong>Resolução</strong> — A história precisa ir a algum lugar.</li>
+        </ul>`
+      },
+      {
+        titulo: "A estrutura em três atos",
+        corpo: `<ul>
+          <li><strong>Ato 1 — Estabelecimento</strong> — Apresente o mundo normal. Crie expectativa.</li>
+          <li><strong>Ato 2 — Confronto</strong> — O obstáculo cresce. A tensão sobe.</li>
+          <li><strong>Ato 3 — Resolução</strong> — O clímax revela o que o personagem escolhe quando o custo é mais alto.</li>
+        </ul>`
+      },
+      {
+        titulo: "Exercícios Práticos",
+        corpo: `<div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 1</span></div>
+          <div class="desafio-titulo">O arquivo de histórias pessoais</div>
+          <p>Liste 5 momentos da sua vida que envolveram: um fracasso, uma surpresa, uma mudança de opinião, um encontro inesperado, ou uma decisão difícil. Para cada um: Quem? Queria o quê? O que impediu? O que aprendeu?</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 2</span></div>
+          <div class="desafio-titulo">A história de 90 segundos</div>
+          <p>Escolha um dos momentos acima. Escreva uma história com início, conflito e resolução — máximo 200 palavras. Grave em áudio. Ouça. Edite o que soa lento.</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 3</span></div>
+          <div class="desafio-titulo">Dados com alma</div>
+          <p>Pegue uma estatística que você usa frequentemente. Crie uma história de 3 frases ao redor dela: quem, o que aconteceu, o que o dado revelou.</p>
+        </div>`
+      }
+    ],
+    anterior: 4, proximo: 6
+  },
+  {
+    num: "Módulo 06",
+    titulo: "Feedback Estruturado",
+    subtitulo: "Cuidado radical como linguagem de liderança · Kim Scott",
+    secoes: [
+      {
+        titulo: "O modelo dos quatro quadrantes",
+        corpo: `<ul>
+          <li><strong>Radical Candor</strong> — Alto cuidado + alto desafio. O ideal.</li>
+          <li><strong>Agressividade Ofensiva</strong> — Baixo cuidado + alto desafio. Gera defensividade.</li>
+          <li><strong>Empatia Ruinosa</strong> — Alto cuidado + baixo desafio. Você se importa mas não fala a verdade.</li>
+          <li><strong>Insinceridade Manipuladora</strong> — Elogios vazios e críticas indiretas. O pior quadrante.</li>
+        </ul>
+        <div class="citacao">"Cuidado sem honestidade é covardia. Honestidade sem cuidado é crueldade." — Kim Scott</div>`
+      },
+      {
+        titulo: "A estrutura SCI",
+        corpo: `<ul>
+          <li><strong>S — Situação</strong> — Descreva o contexto específico. Não generalize.</li>
+          <li><strong>C — Comportamento</strong> — Descreva o comportamento observado, não a intenção.</li>
+          <li><strong>I — Impacto</strong> — Relate o efeito concreto.</li>
+        </ul>
+        <p>Feedback positivo também precisa de estrutura. Elogios vagos não desenvolvem ninguém.</p>`
+      },
+      {
+        titulo: "Exercícios Práticos",
+        corpo: `<div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 1</span></div>
+          <div class="desafio-titulo">Mapeie seu quadrante padrão</div>
+          <p>Pense nas últimas 3 situações em que teve que dar feedback difícil. Para cada uma: você falou? Com quanta clareza? Com quanto cuidado? Em qual quadrante você naturalmente cai?</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 2</span></div>
+          <div class="desafio-titulo">Prática do SCI</div>
+          <p>Escolha uma situação recente em que queria dar feedback mas não deu. Reescreva usando SCI: "Na situação de... / Observei o comportamento de... / O impacto foi..."</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 3</span></div>
+          <div class="desafio-titulo">Peça feedback hoje</div>
+          <p>Ao final de uma reunião ou entrega, pergunte: "O que eu poderia ter feito diferente aqui?" Escute completamente. Não explique. Não justifique. Agradeça.</p>
+        </div>`
+      }
+    ],
+    anterior: 5, proximo: 7
+  },
+  {
+    num: "Módulo 07",
+    titulo: "Gestão de Silêncio e Pausa",
+    subtitulo: "A palavra mais poderosa que você nunca disse · Thich Nhat Hanh",
+    secoes: [
+      {
+        titulo: "O silêncio como linguagem",
+        corpo: `<p>Thich Nhat Hanh ensina que o silêncio não é vazio. É o espaço onde o entendimento acontece. Quem aprende a usar o silêncio conscientemente ganha três coisas: mais presença, mais autoridade e mais clareza nas respostas.</p>
+        <div class="citacao">"Falar é prata. Silêncio é ouro. Escutar de verdade é diamante." — Thich Nhat Hanh</div>`
+      },
+      {
+        titulo: "Os quatro tipos de pausa",
+        corpo: `<ul>
+          <li><strong>Pausa receptiva</strong> — Após o outro falar, espere 2-3 segundos antes de responder.</li>
+          <li><strong>Pausa de ênfase</strong> — Antes de uma frase importante, pause. Cria antecipação.</li>
+          <li><strong>Pausa de processamento</strong> — Quando perguntado algo difícil, pause antes de responder.</li>
+          <li><strong>Pausa de campo</strong> — Em negociações: após sua proposta, pare. Quem fala primeiro geralmente cede mais.</li>
+        </ul>`
+      },
+      {
+        titulo: "Exercícios Práticos",
+        corpo: `<div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 1</span></div>
+          <div class="desafio-titulo">A pausa de 3 segundos</div>
+          <p>Na próxima conversa, após o outro terminar de falar, conte mentalmente 1, 2, 3 antes de responder. Observe: as pessoas vão continuar falando, revelando mais.</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 2</span></div>
+          <div class="desafio-titulo">Dois minutos de silêncio intencional</div>
+          <p>Uma vez por dia, sente-se em silêncio por dois minutos sem estímulos externos. Sem celular, sem música. Observe os pensamentos sem se prender neles.</p>
+        </div>
+        <div class="desafio">
+          <div class="desafio-header"><span class="desafio-num">Exercício 3</span></div>
+          <div class="desafio-titulo">A pausa de ênfase em apresentações</div>
+          <p>Prepare uma fala de 2 minutos. Identifique a frase mais importante. Ensaie: pause 2 segundos antes dela, diga-a devagar, pause novamente após. Grave e ouça.</p>
+        </div>`
+      }
+    ],
+    anterior: 6
+  }
+];
+
+let atual = 0;
+
+function mostrar(idx) {
+  atual = idx;
+  const mod = modulos[idx];
+
+  // Atualiza sidebar
+  document.querySelectorAll(".modulo-item").forEach((el, i) => {
+    el.classList.toggle("ativo", i === idx);
+  });
+
+  // Monta conteúdo
+  let html = `
+    <div class="mod-tag">${mod.num}</div>
+    <div class="mod-titulo">${mod.titulo}</div>
+    <div class="mod-subtitulo">${mod.subtitulo}</div>
+  `;
+
+  mod.secoes.forEach(s => {
+    html += `<div class="mod-secao"><h2>${s.titulo}</h2>${s.corpo}</div>`;
+  });
+
+  // Navegação
+  html += `<div class="nav-modulos">`;
+  if (mod.anterior !== undefined) {
+    html += `<button class="btn-nav" onclick="mostrar(${mod.anterior})">← Anterior</button>`;
+  }
+  if (mod.proximo !== undefined) {
+    html += `<button class="btn-nav primario" onclick="mostrar(${mod.proximo})">Próximo →</button>`;
+  }
+  html += `</div>`;
+
+  document.getElementById("conteudo").innerHTML = html;
+  document.getElementById("conteudo").scrollTop = 0;
+  window.scrollTo(0, 0);
+}
+
+mostrar(0);
+</script>
+
+</body>
+</html>
