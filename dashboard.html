@@ -6,119 +6,57 @@
   <title>GRL Network</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: #fff;
-      font-family: Consolas, monospace;
-      color: #003366;
-      min-height: 100vh;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      border-bottom: 1px solid rgba(0,51,102,0.12);
-    }
-
+    body { background: #fff; font-family: Consolas, monospace; color: #003366; min-height: 100vh; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid rgba(0,51,102,0.12); }
     .email { font-size: 12px; opacity: .5; }
+    button { font-family: Consolas, monospace; font-size: 11px; color: #003366; background: transparent; border: 1px solid rgba(0,51,102,0.25); border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+    .main { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 49px); }
+    .col { padding: 40px 24px; display: flex; flex-direction: column; align-items: center; }
+    .col-fila { border-right: 1px solid rgba(0,51,102,0.10); justify-content: flex-start; order: 1; }
+    .col-matriz { justify-content: center; order: 2; }
+    .rotulo { font-size: 10px; letter-spacing: 3px; opacity: .3; text-transform: uppercase; margin-bottom: 24px; align-self: flex-start; }
 
-    button {
-      font-family: Consolas, monospace;
-      font-size: 11px;
-      color: #003366;
-      background: transparent;
-      border: 1px solid rgba(0,51,102,0.25);
-      border-radius: 8px;
-      padding: 5px 12px;
-      cursor: pointer;
+    .contador { align-self: flex-start; margin-bottom: 32px; }
+    .contador-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; opacity: .3; margin-bottom: 4px; }
+    .contador-valor { font-size: 36px; font-weight: 700; color: #003366; opacity: .85; }
+
+    .secao { width: 100%; margin-bottom: 24px; }
+    .secao-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; opacity: .3; margin-bottom: 10px; }
+    .bolinhas { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .bolinha {
+      width: 14px; height: 14px; border-radius: 50%;
+      cursor: pointer; border: none; padding: 0;
+      transition: transform .15s;
     }
+    .bolinha:hover { transform: scale(1.3); }
+    .bolinha.super { background: #003366; }
+    .bolinha.ultra { background: #c9a84c; }
 
-    .main {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: calc(100vh - 49px);
+    .tooltip-card {
+      display: none; position: fixed;
+      background: #fff; border: 1px solid rgba(0,51,102,0.15);
+      border-radius: 10px; padding: 14px 18px;
+      font-size: 11px; z-index: 200;
+      box-shadow: 0 4px 20px rgba(0,51,102,0.12);
+      min-width: 210px;
     }
+    .tooltip-card.ativo { display: block; }
+    .tooltip-email { font-weight: 700; margin-bottom: 8px; font-size: 12px; }
+    .tooltip-info { opacity: .6; font-size: 10px; line-height: 2; }
+    .tooltip-fechar { position: absolute; top: 8px; right: 10px; font-size: 14px; cursor: pointer; opacity: .3; background: none; border: none; color: #003366; }
 
-    .col {
-      padding: 40px 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .col:first-child { border-right: 1px solid rgba(0,51,102,0.10); }
-
-    .rotulo {
-      font-size: 10px;
-      letter-spacing: 3px;
-      opacity: .3;
-      text-transform: uppercase;
-      margin-bottom: 32px;
-      align-self: flex-start;
-    }
-
-    svg { width: 100%; max-width: 300px; }
-
-    circle { fill: #003366; }
-    circle.vazio { fill: none; stroke: #003366; stroke-width: 1.5; opacity: .2; }
-    line { stroke: #003366; stroke-width: 1; opacity: .12; }
-
-    text {
-      font-family: Consolas, monospace;
-      fill: #003366;
-      text-anchor: middle;
-      dominant-baseline: middle;
-      font-size: 9px;
-      opacity: .5;
-    }
-
-    text.nome { font-size: 10px; opacity: .8; }
-
+    svg { width: 100%; max-width: 300px; overflow: visible; }
     .link-area { margin-top: 40px; width: 100%; max-width: 300px; }
+    .link-rotulo { font-size: 10px; letter-spacing: 2px; opacity: .3; text-transform: uppercase; margin-bottom: 8px; }
+    .link { font-size: 10px; background: rgba(0,51,102,0.04); border: 1px solid rgba(0,51,102,0.12); border-radius: 8px; padding: 10px 12px; word-break: break-all; line-height: 1.6; margin-bottom: 8px; }
 
-    .link-rotulo {
-      font-size: 10px;
-      letter-spacing: 2px;
-      opacity: .3;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .link {
-      font-size: 10px;
-      background: rgba(0,51,102,0.04);
-      border: 1px solid rgba(0,51,102,0.12);
-      border-radius: 8px;
-      padding: 10px 12px;
-      word-break: break-all;
-      line-height: 1.6;
-      margin-bottom: 8px;
-    }
-
-    .fila { width: 100%; list-style: none; align-self: flex-start; margin-top: 48px; }
-
-    .fila li {
-      display: flex;
-      gap: 10px;
-      padding: 8px 10px;
-      border: 1px solid rgba(0,51,102,0.08);
-      border-radius: 8px;
-      margin-bottom: 6px;
-      font-size: 11px;
-    }
-
-    .fila .pos { opacity: .3; min-width: 16px; }
-    .fila .n   { flex: 1; opacity: .7; }
-    .fila .g   { opacity: .35; }
-
-    .vazio-msg { font-size: 11px; opacity: .25; margin-top: 16px; }
+    .vazio-msg { font-size: 11px; opacity: .25; margin-top: 8px; }
 
     @media (max-width: 600px) {
       .main { grid-template-columns: 1fr; }
-      .col:first-child { border-right: none; border-bottom: 1px solid rgba(0,51,102,0.10); }
+      .col-fila { order: 2; border-right: none; border-top: 1px solid rgba(0,51,102,0.10); }
+      .col-matriz { order: 1; }
     }
   </style>
 </head>
@@ -131,24 +69,46 @@
 
 <div class="main">
 
-  <div class="col">
+  <div class="col col-fila">
+    <div class="rotulo">fila</div>
+
+    <div class="contador">
+      <div class="contador-label">vendas diretas</div>
+      <div class="contador-valor" id="contador">0</div>
+    </div>
+
+    <div class="secao" id="secao-ultra" style="display:none">
+      <div class="secao-label">ultra minds</div>
+      <div class="bolinhas" id="fila-ultra"></div>
+    </div>
+
+    <div class="secao" id="secao-super" style="display:none">
+      <div class="secao-label">super minds</div>
+      <div class="bolinhas" id="fila-super"></div>
+    </div>
+
+    <div class="vazio-msg" id="vazio-msg">nenhum indicado ainda</div>
+  </div>
+
+  <div class="col col-matriz">
     <div class="rotulo">matriz</div>
 
-    <svg viewBox="0 0 300 260">
-      <line x1="150" y1="65" x2="75"  y2="180"/>
-      <line x1="150" y1="65" x2="225" y2="180"/>
+    <svg viewBox="0 0 300 290">
+      <line x1="97" y1="220" x2="203" y2="220" stroke="#003366" stroke-width="1" opacity=".2"/>
 
-      <circle cx="150" cy="55" r="22"/>
-      <text x="150" y="49">eu</text>
-      <text x="150" y="60" class="nome" id="eu-nome"></text>
+      <a href="masterminds.html" style="cursor:pointer">
+        <circle cx="150" cy="60" r="22" fill="#003366"/>
+        <text x="150" y="55" font-family="Consolas,monospace" font-size="7.5" fill="#fff" text-anchor="middle" dominant-baseline="middle">Master</text>
+        <text x="150" y="67" font-family="Consolas,monospace" font-size="7.5" fill="#fff" text-anchor="middle" dominant-baseline="middle">Minds</text>
+      </a>
 
-      <circle cx="75"  cy="185" r="18" class="vazio" id="circ-ultra"/>
-      <text x="75"  y="179">ultra</text>
-      <text x="75"  y="190" class="nome" id="ultra-nome"></text>
+      <circle cx="75" cy="220" r="22" fill="none" stroke="#003366" stroke-width="1.5" opacity=".25" id="circ-super"/>
+      <text x="75" y="215" font-family="Consolas,monospace" font-size="7.5" fill="#003366" text-anchor="middle" dominant-baseline="middle" opacity=".6">Super</text>
+      <text x="75" y="227" font-family="Consolas,monospace" font-size="7.5" fill="#003366" text-anchor="middle" dominant-baseline="middle" opacity=".6">Minds</text>
 
-      <circle cx="225" cy="185" r="18" class="vazio" id="circ-super"/>
-      <text x="225" y="179">super</text>
-      <text x="225" y="190" class="nome" id="super-nome"></text>
+      <circle cx="225" cy="220" r="22" fill="none" stroke="#003366" stroke-width="1.5" opacity=".25" id="circ-ultra"/>
+      <text x="225" y="215" font-family="Consolas,monospace" font-size="7.5" fill="#003366" text-anchor="middle" dominant-baseline="middle" opacity=".6">Ultra</text>
+      <text x="225" y="227" font-family="Consolas,monospace" font-size="7.5" fill="#003366" text-anchor="middle" dominant-baseline="middle" opacity=".6">Minds</text>
     </svg>
 
     <div class="link-area">
@@ -159,11 +119,12 @@
     </div>
   </div>
 
-  <div class="col">
-    <div class="rotulo">fila</div>
-    <ul class="fila" id="fila"></ul>
-  </div>
+</div>
 
+<div class="tooltip-card" id="tooltip">
+  <button class="tooltip-fechar" onclick="document.getElementById('tooltip').classList.remove('ativo')">✕</button>
+  <div class="tooltip-email" id="tip-email"></div>
+  <div class="tooltip-info" id="tip-info"></div>
 </div>
 
 <script type="module">
@@ -175,39 +136,82 @@
     if (!user) { location.href = "index.html"; return; }
 
     document.getElementById("email").textContent = user.email;
-    document.getElementById("eu-nome").textContent = user.email.split("@")[0];
-
-    const link = `https://grlnetwork.com/cadastro.html?ref=${user.uid}`;
-    document.getElementById("link").textContent = link;
+    document.getElementById("link").textContent = `https://grlnetwork.com/cadastro.html?ref=${user.uid}`;
 
     const snap = await getDocs(query(
       collection(db, "usuarios"),
-      where("sponsor", "==", user.uid),
-      orderBy("grade", "desc"),
+      where("indicador", "==", user.uid),
       orderBy("ts", "asc")
     ));
 
     const lista = [];
     snap.forEach(d => lista.push(d.data()));
 
-    if (lista[0]) {
-      document.getElementById("circ-ultra").classList.remove("vazio");
-      document.getElementById("ultra-nome").textContent = lista[0].email.split("@")[0];
-    }
-    if (lista[1]) {
-      document.getElementById("circ-super").classList.remove("vazio");
-      document.getElementById("super-nome").textContent = lista[1].email.split("@")[0];
+    if (!lista.length) return;
+
+    document.getElementById("vazio-msg").style.display = "none";
+    document.getElementById("contador").textContent = lista.length;
+
+    const filaSuper = document.getElementById("fila-super");
+    const filaUltra = document.getElementById("fila-ultra");
+    let temSuper = false, temUltra = false;
+    let melhorSuper = null, melhorUltra = null;
+
+    for (const u of lista) {
+      const subSnap = await getDocs(query(
+        collection(db, "usuarios"),
+        where("indicador", "==", u.uid)
+      ));
+      const temFilhos = !subSnap.empty;
+      const diretas = u.diretas || 0;
+      const indiretas = u.indiretas || 0;
+
+      if (temFilhos) {
+        temUltra = true;
+        const btn = document.createElement("button");
+        btn.className = "bolinha ultra";
+        btn.addEventListener("click", e => mostrarTooltip(e, u.email, diretas, indiretas));
+        filaUltra.appendChild(btn);
+        if (!melhorUltra || indiretas > (melhorUltra.indiretas || 0)) melhorUltra = u;
+      } else {
+        temSuper = true;
+        const btn = document.createElement("button");
+        btn.className = "bolinha super";
+        btn.addEventListener("click", e => mostrarTooltip(e, u.email, diretas, indiretas));
+        filaSuper.appendChild(btn);
+        if (!melhorSuper || diretas > (melhorSuper.diretas || 0)) melhorSuper = u;
+      }
     }
 
-    const fila = document.getElementById("fila");
-    fila.innerHTML = !lista.length
-      ? '<li class="vazio-msg">nenhum indicado ainda</li>'
-      : lista.map((u, i) => `
-          <li>
-            <span class="pos">${i + 1}</span>
-            <span class="n">${u.email.split("@")[0]}</span>
-            <span class="g">${u.grade > 0 ? "g" + u.grade : "—"}</span>
-          </li>`).join("");
+    if (temSuper) document.getElementById("secao-super").style.display = "block";
+    if (temUltra) document.getElementById("secao-ultra").style.display = "block";
+
+    // Acende célula com os mais produtivos
+    if (melhorSuper) {
+      document.getElementById("circ-super").setAttribute("fill", "#003366");
+      document.getElementById("circ-super").setAttribute("opacity", "1");
+    }
+    if (melhorUltra) {
+      document.getElementById("circ-ultra").setAttribute("fill", "#003366");
+      document.getElementById("circ-ultra").setAttribute("opacity", "1");
+    }
+  });
+
+  function mostrarTooltip(e, email, diretas, indiretas) {
+    const t = document.getElementById("tooltip");
+    document.getElementById("tip-email").textContent = email;
+    document.getElementById("tip-info").innerHTML =
+      `vendas diretas: <strong>${diretas}</strong><br>vendas indiretas: <strong>${indiretas}</strong>`;
+    t.classList.add("ativo");
+    t.style.left = Math.min(e.clientX + 12, window.innerWidth - 230) + "px";
+    t.style.top  = Math.min(e.clientY - 20, window.innerHeight - 140) + "px";
+  }
+
+  document.addEventListener("click", e => {
+    const t = document.getElementById("tooltip");
+    if (!t.contains(e.target) && !e.target.classList.contains("bolinha")) {
+      t.classList.remove("ativo");
+    }
   });
 
   window.copiar = () => {
@@ -217,6 +221,20 @@
       setTimeout(() => fb.textContent = "", 2000);
     });
   };
+
+  // ── TIMEOUT DE INATIVIDADE (15 minutos) ──
+  let timer;
+  function resetTimer() {
+    clearTimeout(timer);
+    timer = setTimeout(async () => {
+      await signOut(auth);
+      location.href = "index.html";
+    }, 15 * 60 * 1000);
+  }
+  ["mousemove", "keydown", "click", "touchstart", "scroll"].forEach(ev =>
+    document.addEventListener(ev, resetTimer)
+  );
+  resetTimer();
 
   window.sair = async () => {
     await signOut(auth);
